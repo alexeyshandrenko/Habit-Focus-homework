@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Habit Tracker (naive)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.4rem; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; gap: 0.5rem; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }
+    input[type="text"] { flex: 1; padding: 0.4rem; }
+    button { padding: 0.4rem 0.7rem; }
+  </style>
+</head>
+<body>
+  <!--
+    Наивный прогон (сессия 1).
+    Короткий промпт-источник (без SPEC / AGENTS Часть II):
+    «Сделай простой трекер привычек в браузере»
+    Намеренно: список на одном экране, без streak, без защиты от дублей/будущего,
+    без валидации битого JSON, без фокуса на одной привычке.
+  -->
+  <h1>Трекер привычек</h1>
+  <form id="add-form">
+    <input id="name" type="text" placeholder="Новая привычка" required />
+    <button type="submit">Добавить</button>
+  </form>
+  <ul id="list"></ul>
+  <script>
+    const KEY = 'habits';
+    let habits = JSON.parse(localStorage.getItem(KEY) || '[]');
+
+    function save() {
+      localStorage.setItem(KEY, JSON.stringify(habits));
+    }
+
+    function render() {
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      habits.forEach((h, i) => {
+        const li = document.createElement('li');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !!h.done;
+        cb.onchange = () => {
+          habits[i].done = cb.checked;
+          save();
+        };
+        const span = document.createElement('span');
+        span.textContent = h.name;
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.textContent = '×';
+        del.onclick = () => {
+          habits.splice(i, 1);
+          save();
+          render();
+        };
+        li.append(cb, span, del);
+        list.append(li);
+      });
+    }
+
+    document.getElementById('add-form').onsubmit = (e) => {
+      e.preventDefault();
+      const input = document.getElementById('name');
+      habits.push({ name: input.value, done: false });
+      input.value = '';
+      save();
+      render();
+    };
+
+    render();
+  </script>
+</body>
+</html>
